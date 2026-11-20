@@ -27,6 +27,14 @@ func generate_deer() -> void:
     body_material.albedo_color = Color(0.42, 0.23, 0.12)
     body_material.roughness = 1.0
 
+    var dark_material := StandardMaterial3D.new()
+    dark_material.albedo_color = Color(0.22, 0.12, 0.07)
+    dark_material.roughness = 1.0
+
+    var light_material := StandardMaterial3D.new()
+    light_material.albedo_color = Color(0.85, 0.78, 0.63)
+    light_material.roughness = 1.0
+
     var body_mesh := SphereMesh.new()
     body_mesh.radius = 0.55
     body_mesh.height = 1.1
@@ -43,6 +51,22 @@ func generate_deer() -> void:
     leg_mesh.height = 0.65
     leg_mesh.material = body_material
 
+    var antler_mesh := CylinderMesh.new()
+    antler_mesh.top_radius = 0.012
+    antler_mesh.bottom_radius = 0.035
+    antler_mesh.height = 0.38
+    antler_mesh.material = dark_material
+
+    var ear_mesh := SphereMesh.new()
+    ear_mesh.radius = 0.12
+    ear_mesh.height = 0.3
+    ear_mesh.material = dark_material
+
+    var tail_mesh := SphereMesh.new()
+    tail_mesh.radius = 0.13
+    tail_mesh.height = 0.25
+    tail_mesh.material = light_material
+
     for i in range(deer_count):
         var deer := Node3D.new()
         deer.name = "Deer_" + str(i)
@@ -58,6 +82,32 @@ func generate_deer() -> void:
         head.mesh = head_mesh
         head.position = Vector3(0.0, 1.35, -0.85)
         deer.add_child(head)
+
+        for side in [-1.0, 1.0]:
+            var antler := MeshInstance3D.new()
+            antler.mesh = antler_mesh
+            antler.position = Vector3(
+                side * 0.13,
+                1.68,
+                -0.82
+            )
+            antler.rotation.z = side * -0.18
+            deer.add_child(antler)
+
+            var ear := MeshInstance3D.new()
+            ear.mesh = ear_mesh
+            ear.position = Vector3(
+                side * 0.23,
+                1.47,
+                -0.82
+            )
+            ear.scale = Vector3(0.65, 1.0, 0.7)
+            deer.add_child(ear)
+
+        var tail := MeshInstance3D.new()
+        tail.mesh = tail_mesh
+        tail.position = Vector3(0.0, 1.1, 0.88)
+        deer.add_child(tail)
 
         var legs: Array[MeshInstance3D] = []
 
