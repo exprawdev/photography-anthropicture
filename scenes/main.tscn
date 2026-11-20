@@ -1,7 +1,8 @@
 
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=5 format=3]
 
 [ext_resource type="Script" path="res://scripts/player_controller.gd" id="1_player_controller"]
+[ext_resource type="Script" path="res://scenes/nature/forest_generator.gd" id="2_forest_generator"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -15,7 +16,6 @@ tonemap_mode = 2
 size = Vector2(200, 200)
 
 [node name="Main" type="Node3D"]
-script = ExtResource("1_player_controller")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")
@@ -29,7 +29,12 @@ shadow_enabled = true
 position = Vector3(0, -0.1, 0)
 mesh = SubResource("PlaneMesh_ground")
 
-[node name="Camera3D" type="Camera3D" parent="."]
-position = Vector3(0, 2, 6)
-rotation_degrees = Vector3(-10, 0, 0)
+[node name="Forest" type="Node3D" parent="."]
+script = ExtResource("2_forest_generator")
+
+[node name="Player" type="Node3D" parent="."]
+script = ExtResource("1_player_controller")
+
+[node name="Camera3D" type="Camera3D" parent="Player"]
+position = Vector3(0, 1.7, 0)
 current = true
