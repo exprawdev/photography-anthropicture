@@ -40,12 +40,14 @@ func _process(delta: float) -> void:
 
 
 func autofocus() -> bool:
+    if not autofocus_enabled:
+        return false
+
     var viewport := get_viewport()
     var center := viewport.get_visible_rect().size * 0.5
 
     var ray_origin := project_ray_origin(center)
     var ray_direction := project_ray_normal(center)
-
     var ray_end := ray_origin + ray_direction * maximum_focus_distance
 
     var query := PhysicsRayQueryParameters3D.create(
@@ -61,10 +63,9 @@ func autofocus() -> bool:
         return false
 
     focus_target = result.position
-    focus_distance = clampf(
-        ray_origin.distance_to(focus_target),
-        minimum_focus_distance,
-        maximum_focus_distance
+
+    set_focus_distance(
+        ray_origin.distance_to(focus_target)
     )
 
     return true
@@ -76,6 +77,10 @@ func set_focus_distance(value: float) -> void:
         minimum_focus_distance,
         maximum_focus_distance
     )
+
+
+func get_focus_distance() -> float:
+    return focus_distance
 
 
 func set_blur_amount(value: float) -> void:
