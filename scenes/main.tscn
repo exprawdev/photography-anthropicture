@@ -1,5 +1,5 @@
 
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/player_controller.gd" id="1_player_controller"]
 [ext_resource type="Script" path="res://scenes/nature/forest_generator.gd" id="2_forest_generator"]
@@ -7,11 +7,12 @@
 [ext_resource type="Script" path="res://scripts/camera_system.gd" id="4_camera_system"]
 [ext_resource type="Script" path="res://scripts/photo_capture.gd" id="5_photo_capture"]
 [ext_resource type="Script" path="res://ui/photo_gallery.gd" id="6_photo_gallery"]
+[ext_resource type="Script" path="res://scenes/nature/atmosphere_controller.gd" id="7_atmosphere"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
 background_color = Color(0.38, 0.48, 0.52, 1)
-ambient_light_source = 3
+ambient_light_source = 1
 ambient_light_color = Color(0.72, 0.78, 0.82, 1)
 ambient_light_energy = 0.7
 tonemap_mode = 2
@@ -23,6 +24,7 @@ size = Vector2(200, 200)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")
+script = ExtResource("7_atmosphere")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-45, -30, 0)
