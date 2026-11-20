@@ -1,5 +1,5 @@
 
-[gd_scene load_steps=18 format=3]
+[gd_scene load_steps=19 format=3]
 
 [ext_resource type="Script" path="res://scripts/player_controller.gd" id="1_player_controller"]
 [ext_resource type="Script" path="res://scenes/nature/forest_generator.gd" id="2_forest_generator"]
@@ -16,6 +16,7 @@
 [ext_resource type="Script" path="res://scenes/nature/ambient_audio.gd" id="13_ambient_audio"]
 [ext_resource type="Script" path="res://scenes/nature/weather_controller.gd" id="14_weather_controller"]
 [ext_resource type="Script" path="res://scenes/nature/camera_effects.gd" id="15_camera_effects"]
+[ext_resource type="Script" path="res://scenes/nature/dslr_settings.gd" id="16_dslr_settings"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -80,6 +81,9 @@ script = ExtResource("4_camera_system")
 
 [node name="PhotoCapture" type="Node" parent="."]
 script = ExtResource("5_photo_capture")
+
+[node name="DSLRSettings" type="Node" parent="."]
+script = ExtResource("16_dslr_settings")
 
 [node name="MobileHUD" type="CanvasLayer" parent="."]
 
