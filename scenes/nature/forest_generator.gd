@@ -18,27 +18,24 @@ func generate_forest() -> void:
     random_generator.seed = random_seed
 
     var trunk_mesh := CylinderMesh.new()
-    trunk_mesh.top_radius = 0.16
+    trunk_mesh.top_radius = 0.12
     trunk_mesh.bottom_radius = 0.28
     trunk_mesh.height = 2.0
-    trunk_mesh.radial_segments = 8
+    trunk_mesh.radial_segments = 12
 
     var leaf_mesh := SphereMesh.new()
     leaf_mesh.radius = 1.0
     leaf_mesh.height = 2.0
-    leaf_mesh.radial_segments = 8
-    leaf_mesh.rings = 4
+    leaf_mesh.radial_segments = 12
+    leaf_mesh.rings = 8
 
     var trunk_material := StandardMaterial3D.new()
-    trunk_material.albedo_color = Color(0.24, 0.13, 0.07)
+    trunk_material.albedo_color = Color(0.25, 0.14, 0.08)
     trunk_material.roughness = 1.0
 
     var leaf_material := StandardMaterial3D.new()
-    leaf_material.albedo_color = Color(0.12, 0.28, 0.10)
+    leaf_material.albedo_color = Color(0.16, 0.32, 0.12)
     leaf_material.roughness = 1.0
-
-    trunk_mesh.material = trunk_material
-    leaf_mesh.material = leaf_material
 
     var trunks := MultiMesh.new()
     trunks.transform_format = MultiMesh.TRANSFORM_3D
@@ -48,7 +45,7 @@ func generate_forest() -> void:
     var leaves := MultiMesh.new()
     leaves.transform_format = MultiMesh.TRANSFORM_3D
     leaves.mesh = leaf_mesh
-    leaves.instance_count = tree_count
+    leaves.instance_count = tree_count * 3
 
     for i in range(tree_count):
         var x := random_generator.randf_range(
@@ -67,27 +64,61 @@ func generate_forest() -> void:
         )
 
         var tree_width := tree_height * random_generator.randf_range(
-            0.18,
-            0.28
+            0.20,
+            0.32
+        )
+
+        var tree_rotation := random_generator.randf_range(
+            0.0,
+            TAU
+        )
+
+        var trunk_scale := Vector3(
+            random_generator.randf_range(0.8, 1.2),
+            tree_height * 0.5,
+            random_generator.randf_range(0.8, 1.2)
         )
 
         var trunk_transform := Transform3D(
-            Basis.from_scale(
-                Vector3(1.0, tree_height * 0.5, 1.0)
+            Basis.from_scale(trunk_scale).rotated(
+                Vector3.UP,
+                tree_rotation
             ),
             Vector3(x, tree_height * 0.5, z)
         )
 
         trunks.set_instance_transform(i, trunk_transform)
 
-        var leaf_transform := Transform3D(
-            Basis.from_scale(
-                Vector3(tree_width, tree_height * 0.22, tree_width)
-            ),
-            Vector3(x, tree_height * 0.85, z)
-        )
+        for layer in range(3):
+            var leaf_index := i * 3 + layer
 
-        leaves.set_instance_transform(i, leaf_transform)
+            var layer_height := 0.68 + float(layer) * 0.14
+            var layer_width := 1.0 - float(layer) * 0.18
+
+            var leaf_scale := Vector3(
+                tree_width * layer_width,
+                tree_height * 0.20,
+                tree_width * layer_width
+            )
+
+            var leaf_position := Vector3(
+                x,
+                tree_height * layer_height,
+                z
+            )
+
+            var leaf_transform := Transform3D(
+                Basis.from_scale(leaf_scale).rotated(
+                    Vector3.UP,
+                    tree_rotation
+                ),
+                leaf_position
+            )
+
+            leaves.set_instance_transform(
+                leaf_index,
+                leaf_transform
+            )
 
     var trunk_instance := MultiMeshInstance3D.new()
     trunk_instance.multimesh = trunks
