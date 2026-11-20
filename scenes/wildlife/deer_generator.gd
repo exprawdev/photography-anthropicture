@@ -11,7 +11,6 @@ extends Node3D
 @export var random_seed: int = 24680
 
 var random_generator := RandomNumberGenerator.new()
-
 var player: Node3D
 
 var deer_list: Array[Node3D] = []
@@ -118,6 +117,18 @@ func generate_deer() -> void:
             leg.position = Vector3(side * 0.28, 0.4, front)
             deer.add_child(leg)
             legs.append(leg)
+
+        var collision := StaticBody3D.new()
+        collision.name = "DeerCollision"
+        collision.position = Vector3(0.0, 1.0, 0.0)
+        deer.add_child(collision)
+
+        var collision_shape := CollisionShape3D.new()
+        var capsule := CapsuleShape3D.new()
+        capsule.radius = 0.55
+        capsule.height = 2.0
+        collision_shape.shape = capsule
+        collision.add_child(collision_shape)
 
         deer.position = Vector3(
             random_generator.randf_range(-movement_radius, movement_radius),
