@@ -1,11 +1,12 @@
 
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://scripts/player_controller.gd" id="1_player_controller"]
 [ext_resource type="Script" path="res://scenes/nature/forest_generator.gd" id="2_forest_generator"]
 [ext_resource type="Script" path="res://ui/mobile_hud.gd" id="3_mobile_hud"]
 [ext_resource type="Script" path="res://scripts/camera_system.gd" id="4_camera_system"]
 [ext_resource type="Script" path="res://scripts/photo_capture.gd" id="5_photo_capture"]
+[ext_resource type="Script" path="res://ui/photo_gallery.gd" id="6_photo_gallery"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -53,3 +54,9 @@ script = ExtResource("5_photo_capture")
 [node name="MobileHUD" type="Control" parent="MobileHUD"]
 script = ExtResource("3_mobile_hud")
 mouse_filter = 2
+
+[node name="PhotoGallery" type="CanvasLayer" parent="."]
+
+[node name="PhotoGalleryUI" type="Control" parent="PhotoGallery"]
+script = ExtResource("6_photo_gallery")
+mouse_filter = 0
