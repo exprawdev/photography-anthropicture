@@ -1,9 +1,10 @@
 
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/player_controller.gd" id="1_player_controller"]
 [ext_resource type="Script" path="res://scenes/nature/forest_generator.gd" id="2_forest_generator"]
 [ext_resource type="Script" path="res://ui/mobile_hud.gd" id="3_mobile_hud"]
+[ext_resource type="Script" path="res://scripts/camera_system.gd" id="4_camera_system"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -39,6 +40,9 @@ script = ExtResource("1_player_controller")
 [node name="Camera3D" type="Camera3D" parent="Player"]
 position = Vector3(0, 1.7, 0)
 current = true
+
+[node name="CameraSystem" type="Node3D" parent="Player"]
+script = ExtResource("4_camera_system")
 
 [node name="MobileHUD" type="CanvasLayer" parent="."]
 
