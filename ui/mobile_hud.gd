@@ -3,6 +3,7 @@ extends Control
 
 @export var joystick_radius: float = 85.0
 @export var joystick_deadzone: float = 0.12
+@export var player_path: NodePath = NodePath("../../Player")
 
 var player: Node3D
 
@@ -18,28 +19,27 @@ var joystick_active: bool = false
 func _ready() -> void:
     set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+    player = get_node_or_null(player_path) as Node3D
+
+    joystick_origin = _get_joystick_center()
+    joystick_position = joystick_origin
+
     queue_redraw()
 
 
 func _draw() -> void:
-    var screen_size := get_viewport_rect().size
-
-    var base_position := Vector2(
-        screen_size.x * 0.17,
-        screen_size.y * 0.78
-    )
-
-    var base_radius := joystick_radius
+    var base_position := _get_joystick_center()
 
     draw_circle(
         base_position,
-        base_radius,
+        joystick_radius,
         Color(0.1, 0.15, 0.18, 0.25)
     )
 
     draw_arc(
         base_position,
-        base_radius,
+        joystick_radius,
         0.0,
         TAU,
         48,
@@ -54,23 +54,19 @@ func _draw() -> void:
 
     draw_circle(
         knob_position,
-        base_radius * 0.42,
+        joystick_radius * 0.42,
         Color(0.55, 0.72, 0.78, 0.55)
     )
 
     draw_arc(
         knob_position,
-        base_radius * 0.42,
+        joystick_radius * 0.42,
         0.0,
         TAU,
         32,
         Color(0.9, 0.95, 1.0, 0.8),
         2.0
     )
-
-
-func set_player_reference(target: Node3D) -> void:
-    player = target
 
 
 func _input(event: InputEvent) -> void:
@@ -89,8 +85,7 @@ func _handle_touch(event: InputEventScreenTouch) -> void:
             if left_touch_index == -1:
                 left_touch_index = event.index
                 joystick_active = true
-                joystick_origin = _get_joystick_center()
-                joystick_position = joystick_origin
+                joystick_position = _get_joystick_center()
                 _update_player_movement()
         else:
             if right_touch_index == -1:
@@ -111,10 +106,11 @@ func _handle_touch(event: InputEventScreenTouch) -> void:
 
 func _handle_drag(event: InputEventScreenDrag) -> void:
     if event.index == left_touch_index:
-        var offset := event.position - joystick_origin
+        var offset := event.position - _get_joystick_center()
         offset = offset.limit_length(joystick_radius)
 
-        joystick_position = joystick_origin + offset
+        joystick_position = _get_joystick_center() + offset
+
         _update_player_movement()
         queue_redraw()
 
@@ -136,7 +132,7 @@ func _update_player_movement() -> void:
     if not is_instance_valid(player):
         return
 
-    var offset := joystick_position - joystick_origin
+    var offset := joystick_position - _get_joystick_center()
     var movement := offset / joystick_radius
 
     movement = movement.limit_length(1.0)
