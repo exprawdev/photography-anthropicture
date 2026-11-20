@@ -58,7 +58,7 @@ script = ExtResource("11_bird_generator")
 [node name="Deer" type="Node3D" parent="."]
 script = ExtResource("12_deer_generator")
 
-[node name="Player" type="Node3D" parent="."]
+[node name="Player" type="Node3D" parent="." groups=["player"]]
 script = ExtResource("1_player_controller")
 
 [node name="Camera3D" type="Camera3D" parent="Player"]
