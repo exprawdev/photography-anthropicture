@@ -68,11 +68,13 @@ func get_aperture() -> float:
 
 
 func get_exposure_value() -> float:
-    return log(
-        (aperture * aperture) / shutter_speed
-    ) / log(2.0) - log(
-        float(iso) / 100.0
-    ) / log(2.0)
+    var relative_brightness := (
+        (float(iso) / 100.0)
+        * (shutter_speed / 0.01)
+        * pow(2.8 / aperture, 2.0)
+    )
+
+    return log(maxf(relative_brightness, 0.000001)) / log(2.0)
 
 
 func get_exposure_multiplier() -> float:
@@ -80,11 +82,9 @@ func get_exposure_multiplier() -> float:
 
 
 func _update_exposure() -> void:
-    var exposure_value := get_exposure_value()
-
     exposure_multiplier = pow(
         2.0,
-        -exposure_value
+        get_exposure_value()
     )
 
     exposure_multiplier = clampf(
