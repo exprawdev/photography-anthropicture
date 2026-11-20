@@ -4,11 +4,15 @@ extends Node3D
 @export var deer_count: int = 5
 @export var movement_radius: float = 18.0
 @export var movement_speed: float = 1.2
+@export var escape_speed: float = 4.0
+@export var detection_distance: float = 9.0
 @export var leg_animation_speed: float = 7.0
 @export var leg_animation_strength: float = 0.3
 @export var random_seed: int = 24680
 
 var random_generator := RandomNumberGenerator.new()
+
+var player: Node3D
 
 var deer_list: Array[Node3D] = []
 var deer_legs: Array[Array] = []
@@ -19,6 +23,7 @@ var animation_phases: Array[float] = []
 
 func _ready() -> void:
     random_generator.seed = random_seed
+    player = get_tree().get_first_node_in_group("player") as Node3D
     generate_deer()
 
 
@@ -86,21 +91,13 @@ func generate_deer() -> void:
         for side in [-1.0, 1.0]:
             var antler := MeshInstance3D.new()
             antler.mesh = antler_mesh
-            antler.position = Vector3(
-                side * 0.13,
-                1.68,
-                -0.82
-            )
+            antler.position = Vector3(side * 0.13, 1.68, -0.82)
             antler.rotation.z = side * -0.18
             deer.add_child(antler)
 
             var ear := MeshInstance3D.new()
             ear.mesh = ear_mesh
-            ear.position = Vector3(
-                side * 0.23,
-                1.47,
-                -0.82
-            )
+            ear.position = Vector3(side * 0.23, 1.47, -0.82)
             ear.scale = Vector3(0.65, 1.0, 0.7)
             deer.add_child(ear)
 
@@ -118,12 +115,7 @@ func generate_deer() -> void:
             var side := -1.0 if leg_index % 2 == 0 else 1.0
             var front := -0.55 if leg_index < 2 else 0.55
 
-            leg.position = Vector3(
-                side * 0.28,
-                0.4,
-                front
-            )
-
+            leg.position = Vector3(side * 0.28, 0.4, front)
             deer.add_child(leg)
             legs.append(leg)
 
@@ -141,23 +133,43 @@ func generate_deer() -> void:
 
 
 func _process(delta: float) -> void:
+    if not is_instance_valid(player):
+        player = get_tree().get_first_node_in_group("player") as Node3D
+
     for i in range(deer_list.size()):
         var deer := deer_list[i]
+        var direction := Vector3.ZERO
+        var is_moving := false
+        var is_escaping := false
 
-        movement_timers[i] -= delta
+        if is_instance_valid(player):
+            var distance := deer.global_position.distance_to(
+                player.global_position
+            )
 
-        if movement_timers[i] <= 0.0:
-            target_positions[i] = _get_random_target()
-            movement_timers[i] = random_generator.randf_range(3.0, 7.0)
+            if distance < detection_distance and distance > 0.01:
+                direction = deer.global_position - player.global_position
+                direction.y = 0.0
+                is_escaping = true
 
-        var direction := target_positions[i] - deer.position
-        direction.y = 0.0
-
-        var is_moving := direction.length() > 0.3
-
-        if is_moving:
-            deer.position += direction.normalized() * movement_speed * delta
+        if is_escaping:
+            deer.position += direction.normalized() * escape_speed * delta
             deer.rotation.y = atan2(-direction.x, -direction.z)
+            is_moving = true
+        else:
+            movement_timers[i] -= delta
+
+            if movement_timers[i] <= 0.0:
+                target_positions[i] = _get_random_target()
+                movement_timers[i] = random_generator.randf_range(3.0, 7.0)
+
+            direction = target_positions[i] - deer.position
+            direction.y = 0.0
+
+            if direction.length() > 0.3:
+                deer.position += direction.normalized() * movement_speed * delta
+                deer.rotation.y = atan2(-direction.x, -direction.z)
+                is_moving = true
 
         var animation_time := (
             Time.get_ticks_msec() * 0.001 * leg_animation_speed
