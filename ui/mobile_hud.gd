@@ -5,9 +5,11 @@ extends Control
 @export var joystick_deadzone: float = 0.12
 @export var player_path: NodePath = NodePath("../../Player")
 @export var camera_system_path: NodePath = NodePath("../../Player/CameraSystem")
+@export var photo_capture_path: NodePath = NodePath("../../PhotoCapture")
 
 var player: Node3D
 var camera_system: Node3D
+var photo_capture: Node
 
 var left_touch_index: int = -1
 var right_touch_index: int = -1
@@ -20,6 +22,8 @@ var zoom_out_rect := Rect2()
 var focus_rect := Rect2()
 var shutter_rect := Rect2()
 
+var is_capturing: bool = false
+
 
 func _ready() -> void:
     set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -27,8 +31,14 @@ func _ready() -> void:
 
     player = get_node_or_null(player_path) as Node3D
     camera_system = get_node_or_null(camera_system_path) as Node3D
+    photo_capture = get_node_or_null(photo_capture_path)
 
     _update_button_positions()
+
+    if is_instance_valid(photo_capture):
+        photo_capture.photo_saved.connect(_on_photo_saved)
+        photo_capture.photo_failed.connect(_on_photo_failed)
+
     queue_redraw()
 
 
@@ -242,4 +252,22 @@ func _update_player_movement() -> void:
 
 
 func _take_photo() -> void:
-    print("Shutter pressed - photo capture will be implemented next.")
+    if is_capturing:
+        return
+
+    if not is_instance_valid(photo_capture):
+        push_warning("PhotoCapture node was not found.")
+        return
+
+    is_capturing = true
+    photo_capture.call("capture_photo", self)
+
+
+func _on_photo_saved(file_path: String) -> void:
+    is_capturing = false
+    print("Photography saved successfully: ", file_path)
+
+
+func _on_photo_failed(error_code: int) -> void:
+    is_capturing = false
+    push_warning("Photography failed. Error: " + str(error_code))
