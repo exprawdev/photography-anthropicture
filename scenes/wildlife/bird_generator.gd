@@ -5,12 +5,18 @@ extends Node3D
 @export var flight_radius: float = 25.0
 @export var flight_height: float = 8.0
 @export var flight_speed: float = 1.5
+@export var wing_speed: float = 12.0
+@export var wing_angle: float = 0.65
 
 var random_generator := RandomNumberGenerator.new()
+
 var birds: Array[Node3D] = []
-var wings: Array[Node3D] = []
+var left_wings: Array[MeshInstance3D] = []
+var right_wings: Array[MeshInstance3D] = []
+
 var flight_angles: Array[float] = []
 var flight_heights: Array[float] = []
+var bird_phases: Array[float] = []
 
 
 func _ready() -> void:
@@ -58,7 +64,8 @@ func generate_birds() -> void:
         bird.add_child(right_wing)
 
         birds.append(bird)
-        wings.append(left_wing)
+        left_wings.append(left_wing)
+        right_wings.append(right_wing)
 
         flight_angles.append(
             random_generator.randf_range(0.0, TAU)
@@ -69,6 +76,10 @@ func generate_birds() -> void:
                 flight_height - 3.0,
                 flight_height + 3.0
             )
+        )
+
+        bird_phases.append(
+            random_generator.randf_range(0.0, TAU)
         )
 
 
@@ -87,6 +98,10 @@ func _process(delta: float) -> void:
 
         bird.rotation.y = -angle + PI * 0.5
 
-        var flap := sin(Time.get_ticks_msec() * 0.012 + float(i))
+        var flap := sin(
+            Time.get_ticks_msec() * 0.001 * wing_speed
+            + bird_phases[i]
+        ) * wing_angle
 
-        wings[i].rotation.z = flap * 0.65
+        left_wings[i].rotation.z = flap
+        right_wings[i].rotation.z = -flap
