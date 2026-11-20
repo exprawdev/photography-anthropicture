@@ -4,16 +4,21 @@ extends Control
 @export var joystick_radius: float = 85.0
 @export var joystick_deadzone: float = 0.12
 @export var player_path: NodePath = NodePath("../../Player")
+@export var camera_system_path: NodePath = NodePath("../../Player/CameraSystem")
 
 var player: Node3D
+var camera_system: Node3D
 
 var left_touch_index: int = -1
 var right_touch_index: int = -1
 
-var joystick_origin: Vector2 = Vector2.ZERO
 var joystick_position: Vector2 = Vector2.ZERO
-
 var joystick_active: bool = false
+
+var zoom_in_rect := Rect2()
+var zoom_out_rect := Rect2()
+var focus_rect := Rect2()
+var shutter_rect := Rect2()
 
 
 func _ready() -> void:
@@ -21,51 +26,125 @@ func _ready() -> void:
     mouse_filter = Control.MOUSE_FILTER_IGNORE
 
     player = get_node_or_null(player_path) as Node3D
+    camera_system = get_node_or_null(camera_system_path) as Node3D
 
-    joystick_origin = _get_joystick_center()
-    joystick_position = joystick_origin
-
+    _update_button_positions()
     queue_redraw()
 
 
+func _notification(what: int) -> void:
+    if what == NOTIFICATION_RESIZED:
+        _update_button_positions()
+        queue_redraw()
+
+
+func _update_button_positions() -> void:
+    var screen_size := get_viewport_rect().size
+
+    zoom_in_rect = Rect2(
+        screen_size.x - 150,
+        screen_size.y * 0.40,
+        65,
+        65
+    )
+
+    zoom_out_rect = Rect2(
+        screen_size.x - 150,
+        screen_size.y * 0.53,
+        65,
+        65
+    )
+
+    focus_rect = Rect2(
+        screen_size.x - 150,
+        screen_size.y * 0.67,
+        65,
+        65
+    )
+
+    shutter_rect = Rect2(
+        screen_size.x - 115,
+        screen_size.y * 0.82,
+        90,
+        90
+    )
+
+
 func _draw() -> void:
-    var base_position := _get_joystick_center()
+    var center := _get_joystick_center()
+    var knob := center
+
+    if joystick_active:
+        knob = joystick_position
+
+    draw_circle(center, joystick_radius, Color(0.1, 0.15, 0.18, 0.25))
+    draw_arc(center, joystick_radius, 0.0, TAU, 48, Color(0.85, 0.9, 0.92, 0.65), 3.0)
+
+    draw_circle(knob, joystick_radius * 0.42, Color(0.55, 0.72, 0.78, 0.55))
+    draw_arc(knob, joystick_radius * 0.42, 0.0, TAU, 32, Color(0.9, 0.95, 1.0, 0.8), 2.0)
+
+    _draw_button(zoom_in_rect, "+")
+    _draw_button(zoom_out_rect, "−")
+    _draw_button(focus_rect, "AF")
 
     draw_circle(
-        base_position,
-        joystick_radius,
-        Color(0.1, 0.15, 0.18, 0.25)
+        shutter_rect.get_center(),
+        shutter_rect.size.x * 0.5,
+        Color(0.9, 0.9, 0.9, 0.25)
     )
 
     draw_arc(
-        base_position,
-        joystick_radius,
+        shutter_rect.get_center(),
+        shutter_rect.size.x * 0.5,
         0.0,
         TAU,
         48,
-        Color(0.85, 0.9, 0.92, 0.65),
-        3.0
+        Color.WHITE,
+        4.0
     )
 
-    var knob_position := base_position
-
-    if joystick_active:
-        knob_position = joystick_position
-
     draw_circle(
-        knob_position,
-        joystick_radius * 0.42,
-        Color(0.55, 0.72, 0.78, 0.55)
+        shutter_rect.get_center(),
+        shutter_rect.size.x * 0.37,
+        Color(1.0, 1.0, 1.0, 0.85)
+    )
+
+
+func _draw_button(rect: Rect2, label_text: String) -> void:
+    draw_circle(
+        rect.get_center(),
+        rect.size.x * 0.5,
+        Color(0.08, 0.13, 0.16, 0.65)
     )
 
     draw_arc(
-        knob_position,
-        joystick_radius * 0.42,
+        rect.get_center(),
+        rect.size.x * 0.5,
         0.0,
         TAU,
         32,
-        Color(0.9, 0.95, 1.0, 0.8),
+        Color(0.85, 0.92, 0.95, 0.85),
         2.0
+    )
+
+    var font := ThemeDB.fallback_font
+    var font_size := 25
+
+    var text_size := font.get_string_size(
+        label_text,
+        HORIZONTAL_ALIGNMENT_CENTER,
+        -1,
+        font_size
+    )
+
+    draw_string(
+        font,
+        rect.get_center() + Vector2(-text_size.x * 0.5, text_size.y * 0.35),
+        label_text,
+        HORIZONTAL_ALIGNMENT_LEFT,
+        -1,
+        font_size,
+        Color.WHITE
     )
 
 
@@ -78,10 +157,30 @@ func _input(event: InputEvent) -> void:
 
 
 func _handle_touch(event: InputEventScreenTouch) -> void:
-    var screen_width := get_viewport_rect().size.x
-
     if event.pressed:
-        if event.position.x < screen_width * 0.5:
+        if zoom_in_rect.has_point(event.position):
+            if is_instance_valid(camera_system):
+                camera_system.call("zoom_in")
+            queue_redraw()
+            return
+
+        if zoom_out_rect.has_point(event.position):
+            if is_instance_valid(camera_system):
+                camera_system.call("zoom_out")
+            queue_redraw()
+            return
+
+        if focus_rect.has_point(event.position):
+            if is_instance_valid(camera_system):
+                camera_system.call("focus_forward")
+            queue_redraw()
+            return
+
+        if shutter_rect.has_point(event.position):
+            _take_photo()
+            return
+
+        if event.position.x < get_viewport_rect().size.x * 0.5:
             if left_touch_index == -1:
                 left_touch_index = event.index
                 joystick_active = true
@@ -110,7 +209,6 @@ func _handle_drag(event: InputEventScreenDrag) -> void:
         offset = offset.limit_length(joystick_radius)
 
         joystick_position = _get_joystick_center() + offset
-
         _update_player_movement()
         queue_redraw()
 
@@ -141,3 +239,7 @@ func _update_player_movement() -> void:
         movement = Vector2.ZERO
 
     player.call("set_mobile_move_input", movement)
+
+
+func _take_photo() -> void:
+    print("Shutter pressed - photo capture will be implemented next.")
