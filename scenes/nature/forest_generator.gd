@@ -32,10 +32,12 @@ func generate_forest() -> void:
     var trunk_material := StandardMaterial3D.new()
     trunk_material.albedo_color = Color(0.25, 0.14, 0.08)
     trunk_material.roughness = 1.0
+    trunk_mesh.material = trunk_material
 
     var leaf_material := StandardMaterial3D.new()
     leaf_material.albedo_color = Color(0.16, 0.32, 0.12)
     leaf_material.roughness = 1.0
+    leaf_mesh.material = leaf_material
 
     var trunks := MultiMesh.new()
     trunks.transform_format = MultiMesh.TRANSFORM_3D
