@@ -1,5 +1,5 @@
 
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="Script" path="res://scripts/player_controller.gd" id="1_player_controller"]
 [ext_resource type="Script" path="res://scenes/nature/forest_generator.gd" id="2_forest_generator"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scenes/nature/grass_generator.gd" id="8_grass_generator"]
 [ext_resource type="Script" path="res://scenes/nature/lake_generator.gd" id="9_lake_generator"]
 [ext_resource type="Script" path="res://scenes/nature/rock_generator.gd" id="10_rock_generator"]
+[ext_resource type="Script" path="res://scenes/wildlife/bird_generator.gd" id="11_bird_generator"]
 
 [sub_resource type="Environment" id="Environment_main"]
 background_mode = 1
@@ -49,6 +50,9 @@ script = ExtResource("9_lake_generator")
 
 [node name="Rocks" type="Node3D" parent="."]
 script = ExtResource("10_rock_generator")
+
+[node name="Birds" type="Node3D" parent="."]
+script = ExtResource("11_bird_generator")
 
 [node name="Player" type="Node3D" parent="."]
 script = ExtResource("1_player_controller")
