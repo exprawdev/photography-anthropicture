@@ -1,0 +1,49 @@
+
+; ==========================================
+; PHOTOGRAPHY ANTHROPICTURE
+; Realistic 3D Nature Photography Simulator
+; ==========================================
+
+config_version=5
+
+[application]
+
+config/name="Photography Anthropicture"
+config/description="Realistic 3D Nature Photography Simulator"
+run/main_scene="res://scenes/main.tscn"
+config/features=PackedStringArray("4.4")
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+
+window/size/window_width_override=1280
+window/size/window_height_override=720
+
+window/size/mode=3
+
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
+[display/window]
+
+handheld/orientation=6
+
+[rendering]
+
+renderer/rendering_method="mobile"
+renderer/rendering_method.mobile="mobile"
+
+textures/default_filters/use_nearest_mipmap_filter=false
+
+environment/defaults/default_clear_color=Color(0.35, 0.45, 0.5, 1)
+
+[physics]
+
+3d/default_gravity=9.8
+3d/default_gravity_vector=Vector3(0, -1, 0)
+
+[application/run]
+
+low_processor_mode=false
