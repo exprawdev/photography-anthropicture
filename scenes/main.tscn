@@ -7,7 +7,7 @@
 [ext_resource type="Script" path="res://scripts/camera_system.gd" id="4_camera_system"]
 [ext_resource type="Script" path="res://scripts/photo_capture.gd" id="5_photo_capture"]
 [ext_resource type="Script" path="res://ui/photo_gallery.gd" id="6_photo_gallery"]
-[ext_resource type="Script" path="res://scenes/nature/atmosphere_controller.gd" id="7_atmosphere"]
+[ext_resource type="Script" path="res://scenes/nature/sky_controller.gd" id="7_sky_controller"]
 [ext_resource type="Script" path="res://scenes/nature/grass_generator.gd" id="8_grass_generator"]
 [ext_resource type="Script" path="res://scenes/nature/lake_generator.gd" id="9_lake_generator"]
 
@@ -26,7 +26,7 @@ size = Vector2(200, 200)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_main")
-script = ExtResource("7_atmosphere")
+script = ExtResource("7_sky_controller")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 rotation_degrees = Vector3(-45, -30, 0)
