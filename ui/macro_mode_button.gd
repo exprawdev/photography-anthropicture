@@ -42,7 +42,9 @@ func _toggle_macro() -> void:
 
 func _enable_macro() -> void:
     normal_fov = camera.fov
-    normal_focus_distance = camera.focus_distance if "focus_distance" in camera else 20.0
+
+    if camera.has_method("get_focus_distance"):
+        normal_focus_distance = camera.get_focus_distance()
 
     camera.fov = macro_fov
 
