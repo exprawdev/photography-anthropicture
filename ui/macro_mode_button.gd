@@ -6,8 +6,11 @@ extends CanvasLayer
 
 var camera: Camera3D
 var camera_system: Node
-var macro_enabled: bool = false
+
+var root_control: Control
 var macro_button: Button
+
+var macro_enabled: bool = false
 
 var normal_fov: float = 55.0
 var macro_fov: float = 35.0
@@ -22,14 +25,35 @@ func _ready() -> void:
 
     _create_button()
 
+    get_viewport().size_changed.connect(_update_layout)
+    _update_layout()
+
 
 func _create_button() -> void:
+    root_control = Control.new()
+    root_control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    root_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(root_control)
+
     macro_button = Button.new()
     macro_button.text = "MACRO OFF"
-    macro_button.position = Vector2(20, 430)
     macro_button.custom_minimum_size = Vector2(140, 55)
+    macro_button.mouse_filter = Control.MOUSE_FILTER_STOP
     macro_button.pressed.connect(_toggle_macro)
-    add_child(macro_button)
+
+    root_control.add_child(macro_button)
+
+
+func _update_layout() -> void:
+    if not is_instance_valid(root_control):
+        return
+
+    var screen_size := get_viewport().get_visible_rect().size
+
+    macro_button.position = Vector2(
+        20,
+        screen_size.y - 80
+    )
 
 
 func _toggle_macro() -> void:
