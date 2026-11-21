@@ -14,6 +14,7 @@ var delete_dialog: ConfirmationDialog
 
 var portrait_layout: bool = false
 var selected_delete_path: String = ""
+var displayed_photo_path: String = ""
 
 
 func _ready() -> void:
@@ -191,8 +192,8 @@ func _show_photo(photo_path: String) -> void:
     if image == null or image.is_empty():
         return
 
-    var texture := ImageTexture.create_from_image(image)
-    preview.texture = texture
+    preview.texture = ImageTexture.create_from_image(image)
+    displayed_photo_path = photo_path
 
 
 func _confirm_delete_photo(photo_path: String) -> void:
@@ -215,10 +216,12 @@ func _delete_selected_photo() -> void:
         push_error("Unable to delete photo: " + str(error))
         return
 
-    if preview.texture != null:
+    if displayed_photo_path == selected_delete_path:
         preview.texture = null
+        displayed_photo_path = ""
 
     selected_delete_path = ""
+
     _refresh_gallery()
 
     print("Photo deleted successfully.")
