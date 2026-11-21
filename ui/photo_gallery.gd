@@ -128,17 +128,31 @@ func _refresh_gallery() -> void:
         photo_list.add_child(empty_label)
         return
 
+    var photo_files: Array[String] = []
+
     directory.list_dir_begin()
 
     var file_name := directory.get_next()
 
     while file_name != "":
         if not directory.current_is_dir() and file_name.get_extension().to_lower() == "png":
-            _add_photo_entry(file_name)
+            photo_files.append(file_name)
 
         file_name = directory.get_next()
 
     directory.list_dir_end()
+
+    photo_files.sort()
+    photo_files.reverse()
+
+    if photo_files.is_empty():
+        var empty_label := Label.new()
+        empty_label.text = "No photos found."
+        photo_list.add_child(empty_label)
+        return
+
+    for photo_file in photo_files:
+        _add_photo_entry(photo_file)
 
 
 func _add_photo_entry(file_name: String) -> void:
