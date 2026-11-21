@@ -1,4 +1,3 @@
-
 @tool
 extends EditorPlugin
 
@@ -28,7 +27,7 @@ class AndroidShareExportPlugin extends EditorExportPlugin:
         debug: bool
     ) -> PackedStringArray:
         return PackedStringArray([
-            "AndroidShare/bin/AndroidShare.aar"
+            "addons/AndroidShare/bin/AndroidShare.aar"
         ])
 
     func _get_name() -> String:
