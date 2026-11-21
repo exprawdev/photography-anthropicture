@@ -10,6 +10,7 @@ var photo_list: VBoxContainer
 var preview: TextureRect
 var gallery_button: Button
 var close_button: Button
+var share_button: Button
 var delete_dialog: ConfirmationDialog
 var photo_count_label: Label
 var resolution_label: Label
@@ -88,6 +89,18 @@ func _create_gallery_interface() -> void:
     close_button.custom_minimum_size = Vector2(100, 45)
     close_button.pressed.connect(_close_gallery)
     gallery_panel.add_child(close_button)
+
+    share_button = Button.new()
+    share_button.text = "SHARE"
+    share_button.anchor_left = 1.0
+    share_button.anchor_right = 1.0
+    share_button.offset_left = -115
+    share_button.offset_right = -10
+    share_button.offset_top = 10
+    share_button.offset_bottom = 55
+    share_button.disabled = true
+    share_button.pressed.connect(_share_selected_photo)
+    gallery_panel.add_child(share_button)
 
     delete_dialog = ConfirmationDialog.new()
     delete_dialog.title = "Delete Photo"
@@ -228,6 +241,7 @@ func _show_photo(photo_path: String) -> void:
 
     preview.texture = ImageTexture.create_from_image(image)
     displayed_photo_path = photo_path
+    share_button.disabled = false
 
     resolution_label.text = "RESOLUTION: %d x %d" % [
         image.get_width(),
@@ -256,6 +270,27 @@ func _format_file_size(size_bytes: int) -> String:
     return str(size_bytes) + " B"
 
 
+func _share_selected_photo() -> void:
+    if displayed_photo_path.is_empty():
+        return
+
+    if not FileAccess.file_exists(displayed_photo_path):
+        push_warning("Selected photo no longer exists.")
+        return
+
+    if not Engine.has_singleton("AndroidShare"):
+        push_warning("AndroidShare plugin is not installed yet.")
+        return
+
+    var android_share = Engine.get_singleton("AndroidShare")
+
+    android_share.share_file(
+        displayed_photo_path,
+        "image/png",
+        "Share photo"
+    )
+
+
 func _confirm_delete_photo(photo_path: String) -> void:
     selected_delete_path = photo_path
     delete_dialog.dialog_text = "Are you sure you want to delete this photo?"
@@ -281,6 +316,7 @@ func _delete_selected_photo() -> void:
         displayed_photo_path = ""
         resolution_label.text = "RESOLUTION: --"
         file_size_label.text = "FILE SIZE: --"
+        share_button.disabled = true
 
     selected_delete_path = ""
 
