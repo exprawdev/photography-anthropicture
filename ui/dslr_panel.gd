@@ -5,6 +5,7 @@ extends CanvasLayer
 
 var dslr_settings: Node
 
+var root_control: Control
 var toggle_button: Button
 var settings_panel: PanelContainer
 
@@ -19,22 +20,29 @@ var aperture_label: Label
 
 func _ready() -> void:
     dslr_settings = get_node_or_null(settings_path)
+
     _create_interface()
+
+    get_viewport().size_changed.connect(_update_layout)
+    _update_layout()
 
 
 func _create_interface() -> void:
+    root_control = Control.new()
+    root_control.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+    root_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
+    add_child(root_control)
+
     toggle_button = Button.new()
     toggle_button.text = "DSLR"
-    toggle_button.position = Vector2(20, 90)
     toggle_button.custom_minimum_size = Vector2(110, 55)
+    toggle_button.mouse_filter = Control.MOUSE_FILTER_STOP
     toggle_button.pressed.connect(_toggle_panel)
-    add_child(toggle_button)
+    root_control.add_child(toggle_button)
 
     settings_panel = PanelContainer.new()
-    settings_panel.position = Vector2(20, 155)
-    settings_panel.custom_minimum_size = Vector2(300, 300)
-    settings_panel.size = Vector2(300, 300)
-    add_child(settings_panel)
+    settings_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+    root_control.add_child(settings_panel)
 
     var layout := VBoxContainer.new()
     layout.add_theme_constant_override("separation", 10)
@@ -52,6 +60,8 @@ func _create_interface() -> void:
     iso_slider.max_value = 6400
     iso_slider.step = 100
     iso_slider.value = 100
+    iso_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    iso_slider.custom_minimum_size.y = 35
     iso_slider.value_changed.connect(_on_iso_changed)
     layout.add_child(iso_slider)
 
@@ -63,6 +73,8 @@ func _create_interface() -> void:
     shutter_slider.max_value = 2.0
     shutter_slider.step = 0.00025
     shutter_slider.value = 0.01
+    shutter_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    shutter_slider.custom_minimum_size.y = 35
     shutter_slider.value_changed.connect(_on_shutter_changed)
     layout.add_child(shutter_slider)
 
@@ -74,16 +86,39 @@ func _create_interface() -> void:
     aperture_slider.max_value = 22.0
     aperture_slider.step = 0.1
     aperture_slider.value = 2.8
+    aperture_slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    aperture_slider.custom_minimum_size.y = 35
     aperture_slider.value_changed.connect(_on_aperture_changed)
     layout.add_child(aperture_slider)
 
     var close_button := Button.new()
     close_button.text = "CLOSE"
+    close_button.custom_minimum_size.y = 45
     close_button.pressed.connect(_toggle_panel)
     layout.add_child(close_button)
 
     _load_current_settings()
     settings_panel.hide()
+
+
+func _update_layout() -> void:
+    if not is_instance_valid(root_control):
+        return
+
+    var screen_size := get_viewport().get_visible_rect().size
+
+    toggle_button.position = Vector2(20, 90)
+
+    var panel_width: float = minf(screen_size.x - 30.0, 380.0)
+    var panel_height: float = minf(screen_size.y - 40.0, 390.0)
+
+    panel_width = maxf(panel_width, 200.0)
+    panel_height = maxf(panel_height, 250.0)
+
+    settings_panel.size = Vector2(panel_width, panel_height)
+    settings_panel.position = (
+        screen_size - settings_panel.size
+    ) * 0.5
 
 
 func _load_current_settings() -> void:
