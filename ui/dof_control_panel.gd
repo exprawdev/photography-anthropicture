@@ -30,7 +30,6 @@ func _create_interface() -> void:
 
     toggle_button = Button.new()
     toggle_button.text = "DOF"
-    toggle_button.position = Vector2(20, 295)
     toggle_button.custom_minimum_size = Vector2(110, 55)
     toggle_button.mouse_filter = Control.MOUSE_FILTER_STOP
     toggle_button.pressed.connect(_toggle_panel)
@@ -79,7 +78,10 @@ func _update_layout() -> void:
 
     var screen_size := get_viewport().get_visible_rect().size
 
-    toggle_button.position = Vector2(20, 295)
+    toggle_button.position = Vector2(
+        20,
+        screen_size.y * 0.52
+    )
 
     var panel_width: float = minf(screen_size.x - 30.0, 380.0)
     var panel_height: float = minf(screen_size.y - 40.0, 190.0)
