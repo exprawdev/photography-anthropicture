@@ -17,6 +17,9 @@ var right_touch_index: int = -1
 var joystick_position: Vector2 = Vector2.ZERO
 var joystick_active: bool = false
 
+var current_joystick_radius: float = 85.0
+var button_size: float = 65.0
+
 var zoom_in_rect := Rect2()
 var zoom_out_rect := Rect2()
 var focus_rect := Rect2()
@@ -50,34 +53,66 @@ func _notification(what: int) -> void:
 
 func _update_button_positions() -> void:
     var screen_size := get_viewport_rect().size
+    var shortest_side := minf(screen_size.x, screen_size.y)
+
+    current_joystick_radius = minf(
+        joystick_radius,
+        maxf(50.0, shortest_side * 0.12)
+    )
+
+    button_size = clampf(
+        shortest_side * 0.14,
+        52.0,
+        72.0
+    )
+
+    var margin := 18.0
+    var spacing := 9.0
+    var right_x := screen_size.x - button_size - margin
+
+    var shutter_size := button_size * 1.25
+
+    var total_height := (
+        button_size * 3.0
+        + spacing * 2.0
+        + spacing
+        + shutter_size
+    )
+
+    var start_y := maxf(
+        12.0,
+        (screen_size.y - total_height) * 0.5
+    )
 
     zoom_in_rect = Rect2(
-        screen_size.x - 150,
-        screen_size.y * 0.40,
-        65,
-        65
+        right_x,
+        start_y,
+        button_size,
+        button_size
     )
 
     zoom_out_rect = Rect2(
-        screen_size.x - 150,
-        screen_size.y * 0.53,
-        65,
-        65
+        right_x,
+        start_y + button_size + spacing,
+        button_size,
+        button_size
     )
 
     focus_rect = Rect2(
-        screen_size.x - 150,
-        screen_size.y * 0.67,
-        65,
-        65
+        right_x,
+        start_y + (button_size + spacing) * 2.0,
+        button_size,
+        button_size
     )
 
     shutter_rect = Rect2(
-        screen_size.x - 115,
-        screen_size.y * 0.82,
-        90,
-        90
+        right_x - (shutter_size - button_size) * 0.5,
+        start_y + (button_size + spacing) * 3.0,
+        shutter_size,
+        shutter_size
     )
+
+    joystick_position = _get_joystick_center()
 
 
 func _draw() -> void:
@@ -87,11 +122,37 @@ func _draw() -> void:
     if joystick_active:
         knob = joystick_position
 
-    draw_circle(center, joystick_radius, Color(0.1, 0.15, 0.18, 0.25))
-    draw_arc(center, joystick_radius, 0.0, TAU, 48, Color(0.85, 0.9, 0.92, 0.65), 3.0)
+    draw_circle(
+        center,
+        current_joystick_radius,
+        Color(0.1, 0.15, 0.18, 0.25)
+    )
 
-    draw_circle(knob, joystick_radius * 0.42, Color(0.55, 0.72, 0.78, 0.55))
-    draw_arc(knob, joystick_radius * 0.42, 0.0, TAU, 32, Color(0.9, 0.95, 1.0, 0.8), 2.0)
+    draw_arc(
+        center,
+        current_joystick_radius,
+        0.0,
+        TAU,
+        48,
+        Color(0.85, 0.9, 0.92, 0.65),
+        3.0
+    )
+
+    draw_circle(
+        knob,
+        current_joystick_radius * 0.42,
+        Color(0.55, 0.72, 0.78, 0.55)
+    )
+
+    draw_arc(
+        knob,
+        current_joystick_radius * 0.42,
+        0.0,
+        TAU,
+        32,
+        Color(0.9, 0.95, 1.0, 0.8),
+        2.0
+    )
 
     _draw_button(zoom_in_rect, "+")
     _draw_button(zoom_out_rect, "−")
@@ -138,7 +199,7 @@ func _draw_button(rect: Rect2, label_text: String) -> void:
     )
 
     var font := ThemeDB.fallback_font
-    var font_size := 25
+    var font_size := roundi(rect.size.x * 0.36)
 
     var text_size := font.get_string_size(
         label_text,
@@ -149,7 +210,10 @@ func _draw_button(rect: Rect2, label_text: String) -> void:
 
     draw_string(
         font,
-        rect.get_center() + Vector2(-text_size.x * 0.5, text_size.y * 0.35),
+        rect.get_center() + Vector2(
+            -text_size.x * 0.5,
+            text_size.y * 0.35
+        ),
         label_text,
         HORIZONTAL_ALIGNMENT_LEFT,
         -1,
@@ -158,7 +222,7 @@ func _draw_button(rect: Rect2, label_text: String) -> void:
     )
 
 
-func _input(event: InputEvent) -> void:
+func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventScreenTouch:
         _handle_touch(event)
 
@@ -171,23 +235,31 @@ func _handle_touch(event: InputEventScreenTouch) -> void:
         if zoom_in_rect.has_point(event.position):
             if is_instance_valid(camera_system):
                 camera_system.call("zoom_in")
+
+            get_viewport().set_input_as_handled()
             queue_redraw()
             return
 
         if zoom_out_rect.has_point(event.position):
             if is_instance_valid(camera_system):
                 camera_system.call("zoom_out")
+
+            get_viewport().set_input_as_handled()
             queue_redraw()
             return
 
         if focus_rect.has_point(event.position):
             if is_instance_valid(camera_system):
                 camera_system.call("focus_forward")
+
+            get_viewport().set_input_as_handled()
             queue_redraw()
             return
 
         if shutter_rect.has_point(event.position):
             _take_photo()
+
+            get_viewport().set_input_as_handled()
             return
 
         if event.position.x < get_viewport_rect().size.x * 0.5:
@@ -196,9 +268,12 @@ func _handle_touch(event: InputEventScreenTouch) -> void:
                 joystick_active = true
                 joystick_position = _get_joystick_center()
                 _update_player_movement()
+
+                get_viewport().set_input_as_handled()
         else:
             if right_touch_index == -1:
                 right_touch_index = event.index
+                get_viewport().set_input_as_handled()
 
     else:
         if event.index == left_touch_index:
@@ -207,8 +282,11 @@ func _handle_touch(event: InputEventScreenTouch) -> void:
             joystick_position = _get_joystick_center()
             _update_player_movement()
 
+            get_viewport().set_input_as_handled()
+
         if event.index == right_touch_index:
             right_touch_index = -1
+            get_viewport().set_input_as_handled()
 
     queue_redraw()
 
@@ -216,15 +294,19 @@ func _handle_touch(event: InputEventScreenTouch) -> void:
 func _handle_drag(event: InputEventScreenDrag) -> void:
     if event.index == left_touch_index:
         var offset := event.position - _get_joystick_center()
-        offset = offset.limit_length(joystick_radius)
+        offset = offset.limit_length(current_joystick_radius)
 
         joystick_position = _get_joystick_center() + offset
         _update_player_movement()
+
+        get_viewport().set_input_as_handled()
         queue_redraw()
 
     elif event.index == right_touch_index:
         if is_instance_valid(player):
             player.call("rotate_from_touch", event.relative)
+
+        get_viewport().set_input_as_handled()
 
 
 func _get_joystick_center() -> Vector2:
@@ -241,7 +323,7 @@ func _update_player_movement() -> void:
         return
 
     var offset := joystick_position - _get_joystick_center()
-    var movement := offset / joystick_radius
+    var movement := offset / current_joystick_radius
 
     movement = movement.limit_length(1.0)
 
