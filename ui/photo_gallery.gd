@@ -11,10 +11,12 @@ var preview: TextureRect
 var gallery_button: Button
 var close_button: Button
 var delete_dialog: ConfirmationDialog
+var photo_count_label: Label
 
 var portrait_layout: bool = false
 var selected_delete_path: String = ""
 var displayed_photo_path: String = ""
+var total_photo_count: int = 0
 
 
 func _ready() -> void:
@@ -44,6 +46,12 @@ func _create_gallery_interface() -> void:
     gallery_panel.offset_right = -15
     gallery_panel.offset_bottom = -15
     add_child(gallery_panel)
+
+    photo_count_label = Label.new()
+    photo_count_label.text = "PHOTOS: 0"
+    photo_count_label.position = Vector2(125, 18)
+    photo_count_label.custom_minimum_size = Vector2(160, 40)
+    gallery_panel.add_child(photo_count_label)
 
     list_panel = ScrollContainer.new()
     list_panel.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -128,9 +136,13 @@ func _refresh_gallery() -> void:
     for child in photo_list.get_children():
         child.queue_free()
 
+    total_photo_count = 0
+
     var directory := DirAccess.open(photo_directory)
 
     if directory == null:
+        _update_photo_count()
+
         var empty_label := Label.new()
         empty_label.text = "No photos found."
         photo_list.add_child(empty_label)
@@ -153,6 +165,9 @@ func _refresh_gallery() -> void:
     photo_files.sort()
     photo_files.reverse()
 
+    total_photo_count = photo_files.size()
+    _update_photo_count()
+
     if photo_files.is_empty():
         var empty_label := Label.new()
         empty_label.text = "No photos found."
@@ -161,6 +176,11 @@ func _refresh_gallery() -> void:
 
     for photo_file in photo_files:
         _add_photo_entry(photo_file)
+
+
+func _update_photo_count() -> void:
+    if is_instance_valid(photo_count_label):
+        photo_count_label.text = "PHOTOS: " + str(total_photo_count)
 
 
 func _add_photo_entry(file_name: String) -> void:
