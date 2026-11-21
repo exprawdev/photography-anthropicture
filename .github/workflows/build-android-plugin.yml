@@ -1,0 +1,47 @@
+
+name: Build Android Share Plugin
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'android/plugins/AndroidShare/**'
+      - 'settings.gradle'
+      - 'build.gradle'
+      - '.github/workflows/build-android-plugin.yml'
+
+jobs:
+  build:
+    name: Build Android AAR
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Build Android Share Plugin
+        run: gradle :AndroidShare:assembleRelease
+
+      - name: Prepare plugin output
+        run: |
+          mkdir -p addons/AndroidShare/bin
+          cp android/plugins/AndroidShare/build/outputs/aar/AndroidShare-release.aar addons/AndroidShare/bin/AndroidShare.aar
+
+      - name: Upload Android plugin
+        uses: actions/upload-artifact@v4
+        with:
+          name: AndroidShare
+          path: addons/AndroidShare/bin/AndroidShare.aar
