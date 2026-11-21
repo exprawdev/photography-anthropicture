@@ -234,7 +234,15 @@ func _show_photo(photo_path: String) -> void:
         image.get_height()
     ]
 
-    var file_size := FileAccess.get_file_as_bytes(photo_path).size()
+    var file := FileAccess.open(photo_path, FileAccess.READ)
+
+    if file == null:
+        file_size_label.text = "FILE SIZE: unavailable"
+        return
+
+    var file_size := file.get_length()
+    file.close()
+
     file_size_label.text = "FILE SIZE: " + _format_file_size(file_size)
 
 
