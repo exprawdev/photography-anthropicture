@@ -18,12 +18,13 @@ var is_camera_active: bool = true
 
 
 func _ready() -> void:
-    current_fov = clamp(current_fov, minimum_fov, maximum_fov)
+    current_fov = clampf(current_fov, minimum_fov, maximum_fov)
     camera.fov = current_fov
+    _apply_camera_focus()
 
 
 func zoom_in() -> void:
-    current_fov = clamp(
+    current_fov = clampf(
         current_fov - zoom_step,
         minimum_fov,
         maximum_fov
@@ -33,7 +34,7 @@ func zoom_in() -> void:
 
 
 func zoom_out() -> void:
-    current_fov = clamp(
+    current_fov = clampf(
         current_fov + zoom_step,
         minimum_fov,
         maximum_fov
@@ -43,7 +44,7 @@ func zoom_out() -> void:
 
 
 func set_zoom(value: float) -> void:
-    current_fov = clamp(value, minimum_fov, maximum_fov)
+    current_fov = clampf(value, minimum_fov, maximum_fov)
     camera.fov = current_fov
 
 
@@ -74,20 +75,26 @@ func focus_forward() -> void:
     else:
         focus_distance = maximum_focus_distance
 
-    focus_distance = clamp(
-        focus_distance,
-        minimum_focus_distance,
-        maximum_focus_distance
-    )
+    set_focus_distance(focus_distance)
 
 
 func set_focus_distance(value: float) -> void:
-    focus_distance = clamp(
+    focus_distance = clampf(
         value,
         minimum_focus_distance,
         maximum_focus_distance
     )
 
+    _apply_camera_focus()
+
 
 func get_focus_distance() -> float:
     return focus_distance
+
+
+func _apply_camera_focus() -> void:
+    if not is_instance_valid(camera):
+        return
+
+    if camera.has_method("set_focus_distance"):
+        camera.call("set_focus_distance", focus_distance)
