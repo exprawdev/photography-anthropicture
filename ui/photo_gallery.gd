@@ -284,8 +284,12 @@ func _share_selected_photo() -> void:
 
     var android_share = Engine.get_singleton("AndroidShare")
 
+    var absolute_path := ProjectSettings.globalize_path(
+        displayed_photo_path
+    )
+
     android_share.share_file(
-        displayed_photo_path,
+        absolute_path,
         "image/png",
         "Share photo"
     )
