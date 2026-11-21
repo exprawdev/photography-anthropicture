@@ -19,6 +19,7 @@ var joystick_active: bool = false
 
 var current_joystick_radius: float = 85.0
 var button_size: float = 65.0
+var button_spacing: float = 9.0
 
 var zoom_in_rect := Rect2()
 var zoom_out_rect := Rect2()
@@ -57,30 +58,34 @@ func _update_button_positions() -> void:
 
     current_joystick_radius = minf(
         joystick_radius,
-        maxf(50.0, shortest_side * 0.12)
+        maxf(36.0, shortest_side * 0.12)
     )
 
     button_size = clampf(
-        shortest_side * 0.14,
-        52.0,
+        minf(shortest_side * 0.14, screen_size.y * 0.16),
+        36.0,
         72.0
     )
 
-    var margin := 18.0
-    var spacing := 9.0
+    button_spacing = clampf(
+        shortest_side * 0.025,
+        5.0,
+        9.0
+    )
+
+    var margin := clampf(shortest_side * 0.05, 10.0, 18.0)
     var right_x := screen_size.x - button_size - margin
 
     var shutter_size := button_size * 1.25
 
     var total_height := (
         button_size * 3.0
-        + spacing * 2.0
-        + spacing
+        + button_spacing * 3.0
         + shutter_size
     )
 
     var start_y := maxf(
-        12.0,
+        8.0,
         (screen_size.y - total_height) * 0.5
     )
 
@@ -93,21 +98,21 @@ func _update_button_positions() -> void:
 
     zoom_out_rect = Rect2(
         right_x,
-        start_y + button_size + spacing,
+        start_y + button_size + button_spacing,
         button_size,
         button_size
     )
 
     focus_rect = Rect2(
         right_x,
-        start_y + (button_size + spacing) * 2.0,
+        start_y + (button_size + button_spacing) * 2.0,
         button_size,
         button_size
     )
 
     shutter_rect = Rect2(
         right_x - (shutter_size - button_size) * 0.5,
-        start_y + (button_size + spacing) * 3.0,
+        start_y + (button_size + button_spacing) * 3.0,
         shutter_size,
         shutter_size
     )
