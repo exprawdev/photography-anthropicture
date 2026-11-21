@@ -47,3 +47,7 @@ environment/defaults/default_clear_color=Color(0.35, 0.45, 0.5, 1)
 [application/run]
 
 low_processor_mode=false
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/AndroidShare/plugin.cfg")
