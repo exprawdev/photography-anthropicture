@@ -10,8 +10,10 @@ var photo_list: VBoxContainer
 var preview: TextureRect
 var gallery_button: Button
 var close_button: Button
+var delete_dialog: ConfirmationDialog
 
 var portrait_layout: bool = false
+var selected_delete_path: String = ""
 
 
 func _ready() -> void:
@@ -63,6 +65,11 @@ func _create_gallery_interface() -> void:
     close_button.custom_minimum_size = Vector2(100, 45)
     close_button.pressed.connect(_close_gallery)
     gallery_panel.add_child(close_button)
+
+    delete_dialog = ConfirmationDialog.new()
+    delete_dialog.title = "Delete Photo"
+    delete_dialog.confirmed.connect(_delete_selected_photo)
+    add_child(delete_dialog)
 
 
 func _update_gallery_layout() -> void:
@@ -158,16 +165,24 @@ func _refresh_gallery() -> void:
 func _add_photo_entry(file_name: String) -> void:
     var photo_path := photo_directory.path_join(file_name)
 
-    var button := Button.new()
-    button.text = file_name
-    button.custom_minimum_size.y = 55
-    button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    var entry_row := HBoxContainer.new()
+    entry_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-    button.pressed.connect(
-        _show_photo.bind(photo_path)
-    )
+    var select_button := Button.new()
+    select_button.text = file_name
+    select_button.custom_minimum_size.y = 55
+    select_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+    select_button.pressed.connect(_show_photo.bind(photo_path))
 
-    photo_list.add_child(button)
+    var delete_button := Button.new()
+    delete_button.text = "DELETE"
+    delete_button.custom_minimum_size = Vector2(85, 55)
+    delete_button.pressed.connect(_confirm_delete_photo.bind(photo_path))
+
+    entry_row.add_child(select_button)
+    entry_row.add_child(delete_button)
+
+    photo_list.add_child(entry_row)
 
 
 func _show_photo(photo_path: String) -> void:
@@ -178,3 +193,32 @@ func _show_photo(photo_path: String) -> void:
 
     var texture := ImageTexture.create_from_image(image)
     preview.texture = texture
+
+
+func _confirm_delete_photo(photo_path: String) -> void:
+    selected_delete_path = photo_path
+    delete_dialog.dialog_text = "Are you sure you want to delete this photo?"
+    delete_dialog.popup_centered()
+
+
+func _delete_selected_photo() -> void:
+    if selected_delete_path.is_empty():
+        return
+
+    var absolute_path := ProjectSettings.globalize_path(
+        selected_delete_path
+    )
+
+    var error := DirAccess.remove_absolute(absolute_path)
+
+    if error != OK:
+        push_error("Unable to delete photo: " + str(error))
+        return
+
+    if preview.texture != null:
+        preview.texture = null
+
+    selected_delete_path = ""
+    _refresh_gallery()
+
+    print("Photo deleted successfully.")
