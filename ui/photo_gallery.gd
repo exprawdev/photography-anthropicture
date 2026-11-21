@@ -13,6 +13,7 @@ var close_button: Button
 var delete_dialog: ConfirmationDialog
 var photo_count_label: Label
 var resolution_label: Label
+var file_size_label: Label
 
 var portrait_layout: bool = false
 var selected_delete_path: String = ""
@@ -75,6 +76,12 @@ func _create_gallery_interface() -> void:
     resolution_label.custom_minimum_size = Vector2(250, 35)
     gallery_panel.add_child(resolution_label)
 
+    file_size_label = Label.new()
+    file_size_label.text = "FILE SIZE: --"
+    file_size_label.position = Vector2(10, 80)
+    file_size_label.custom_minimum_size = Vector2(250, 35)
+    gallery_panel.add_child(file_size_label)
+
     close_button = Button.new()
     close_button.text = "CLOSE"
     close_button.position = Vector2(10, 10)
@@ -116,7 +123,7 @@ func _update_gallery_layout() -> void:
 
     gallery_layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
     gallery_layout.offset_left = 10
-    gallery_layout.offset_top = 95
+    gallery_layout.offset_top = 110
     gallery_layout.offset_right = -10
     gallery_layout.offset_bottom = -10
 
@@ -227,6 +234,19 @@ func _show_photo(photo_path: String) -> void:
         image.get_height()
     ]
 
+    var file_size := FileAccess.get_file_as_bytes(photo_path).size()
+    file_size_label.text = "FILE SIZE: " + _format_file_size(file_size)
+
+
+func _format_file_size(size_bytes: int) -> String:
+    if size_bytes >= 1048576:
+        return "%.2f MB" % (float(size_bytes) / 1048576.0)
+
+    if size_bytes >= 1024:
+        return "%.2f KB" % (float(size_bytes) / 1024.0)
+
+    return str(size_bytes) + " B"
+
 
 func _confirm_delete_photo(photo_path: String) -> void:
     selected_delete_path = photo_path
@@ -252,6 +272,7 @@ func _delete_selected_photo() -> void:
         preview.texture = null
         displayed_photo_path = ""
         resolution_label.text = "RESOLUTION: --"
+        file_size_label.text = "FILE SIZE: --"
 
     selected_delete_path = ""
 
